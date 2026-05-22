@@ -1,25 +1,37 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+} from '@nestjs/common';
+
 import { PrismaService } from '../prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
-@Injectable()
+@Controller('tasks')
 export class TasksController {
   constructor(private prisma: PrismaService) {}
 
+  @Get()
   findAll() {
     return this.prisma.task.findMany({
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  findOne(id: number) {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
     return this.prisma.task.findUnique({
-      where: { id },
+      where: { id: Number(id) },
     });
   }
 
-  create(dto: CreateTaskDto) {
+  @Post()
+  create(@Body() dto: CreateTaskDto) {
     return this.prisma.task.create({
       data: {
         title: dto.title,
@@ -28,16 +40,21 @@ export class TasksController {
     });
   }
 
-  update(id: number, dto: UpdateTaskDto) {
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateTaskDto,
+  ) {
     return this.prisma.task.update({
-      where: { id },
+      where: { id: Number(id) },
       data: dto,
     });
   }
 
-  remove(id: number) {
+  @Delete(':id')
+  remove(@Param('id') id: string) {
     return this.prisma.task.delete({
-      where: { id },
+      where: { id: Number(id) },
     });
   }
 }
