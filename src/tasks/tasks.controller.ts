@@ -1,34 +1,52 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
-import { TasksService } from './tasks.service';
+import { Controller, Get, Post, Patch, Delete, Param, Body } from '@nestjs/common';
+
+import { PrismaService } from '../prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Controller('tasks')
 export class TasksController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(private prisma: PrismaService) {}
 
   @Get()
   findAll() {
-    return this.tasksService.findAll();
+    return this.prisma.task.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(Number(id));
+    return this.prisma.task.findUnique({
+      where: { id: Number(id) },
+    });
   }
 
   @Post()
   create(@Body() dto: CreateTaskDto) {
-    return this.tasksService.create(dto);
+    return this.prisma.task.create({
+      data: {
+        title: dto.title,
+        priority: dto.priority,
+      },
+    });
   }
 
-  @Put(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateTaskDto) {
-    return this.tasksService.update(Number(id), dto);
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateTaskDto,
+  ) {
+    return this.prisma.task.update({
+      where: { id: Number(id) },
+      data: dto,
+    });
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.tasksService.remove(Number(id));
+    return this.prisma.task.delete({
+      where: { id: Number(id) },
+    });
   }
 }
